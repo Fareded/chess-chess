@@ -5,17 +5,18 @@ using namespace std;
 class Chess_Piece
 {
 private:
-    char piece; // type of piece
+    char icon; // type of piece
     int file;   // column
     int rank;   // row
     bool is_white = true;
     bool is_captured = false;
+    bool is_moved = false;
 
 public:
-    Chess_Piece() : piece(' '), file(' '), rank(' '), is_white(false), is_captured(false) {}
+    Chess_Piece() : icon(' '), file(' '), rank(' '), is_white(false), is_captured(false) {}
     Chess_Piece(char piece, char file, char rank, bool is_white)
     {
-        this->piece = piece;
+        this->icon = piece;
         this->file = file - 'a';
         this->rank = 7 - (rank - '1');
         this->is_white = is_white;
@@ -24,7 +25,7 @@ public:
 
     };
 
-    char getPiece() { return piece; }
+    char getPiece() { return icon; }
     char getRank() { return rank; }
     char getFile() { return file; }
 };
@@ -32,9 +33,34 @@ public:
 class Chess_Board
 {
 private:
+    struct tile
+    {
+        char icon = ' ';
+        Chess_Piece *piece;
+
+        tile(char piece_icon, Chess_Piece *piece)
+        {
+            this->icon = piece_icon;
+            this->piece = piece;
+        }
+        tile() : icon(' '), piece(nullptr) {}
+        void empty_tile()
+        {
+            icon = ' ';
+            piece = nullptr;
+        }
+        char set_tile(Chess_Piece *piece)
+        {
+            this->piece = piece;
+            icon = piece->getPiece();
+            return icon;
+
+        }
+    };
     Chess_Piece pieces[32];
-    char tiles[8][8];
+    tile tiles[8][8];
     bool is_white_turn = true;
+    
 
 public:
     Chess_Board()
@@ -44,7 +70,7 @@ public:
         {
             for (int j = 0; j < 8; j++)
             {
-                tiles[i][j] = ' ';
+                tiles[i][j] = tile(' ', nullptr);
             }
         }
 
@@ -88,7 +114,8 @@ public:
         {
             int rank = pieces[i].getRank();
             int file = pieces[i].getFile();
-            tiles[rank][file] = pieces[i].getPiece();
+            tiles[rank][file].piece = &pieces[i];
+            tiles[rank][file].icon = pieces[i].getPiece();
         }
     }
 
@@ -101,7 +128,7 @@ public:
             std::cout << 8 - i << "| ";
             for (int j = 0; j < 8; j++)
             {
-                std::cout << tiles[i][j] << " ";
+                std::cout << tiles[i][j].icon << " ";
             }
             std::cout << "|" << 8 - i << " ";
             std::cout << std::endl;
@@ -132,13 +159,13 @@ public:
         }
 
         // Check if piece exists at the initial location
-        if (tiles[rank][file] == ' ')
+        if (tiles[rank][file].icon == ' ')
         {
-            std::cout << "Empty tile." << std::endl;
+            std::cout << "No piece at this position" << std::endl;
             return;
         }
 
-        if (tiles[rank][file] != piece)
+        if (tiles[rank][file].icon != piece)
         {
             std::cout << "Wrong piece." << std::endl;
             return;
@@ -162,10 +189,9 @@ public:
             return;
         }
         
-        
-
-        tiles[rank][file] = ' ';
-        tiles[target_rank][target_file] = piece;
+        // Move the piece
+        tiles[target_rank][target_file].set_tile(tiles[rank][file].piece);
+        tiles[rank][file].empty_tile();
         is_white_turn = !is_white_turn;
         std::cout << "Last move: " << move << std::endl;
     }
@@ -207,11 +233,11 @@ public:
         {
             if (rank == 6)
             {
-                if (tiles[rank - 1][file] == ' ')
+                if (tiles[rank - 1][file].icon == ' ')
                 {
                     //If in the starting position, the pawn can move 1 or 2 tiles
                     moves.push_back(make_pair(rank - 1, file));
-                    if (tiles[rank - 2][file] == ' ')
+                    if (tiles[rank - 2][file].icon == ' ')
                     {
                         moves.push_back(make_pair(rank - 2, file));
                     }
@@ -220,14 +246,14 @@ public:
             else if (rank > 0)
             {
                 //If not in the starting position, the pawn can only move 1 tile forward
-                if (tiles[rank - 1][file] == ' ')
+                if (tiles[rank - 1][file].icon == ' ')
                 {
                     moves.push_back(make_pair(rank - 1, file));
                 }
             }
             // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
                 // possibly add a last_move variable to the class to store the last move
-            if (rank > 0 && file > 0 && tiles[rank - 1][file - 1] != ' ' && !is_white_turn)
+            if (rank > 0 && file > 0 && tiles[rank - 1][file - 1].icon != ' ' && !is_white_turn)
             {
                 // If there is an enemy piece diagonally to the left, the pawn can capture it (en passant)
                 moves.push_back(make_pair(rank - 1, file - 1));
@@ -237,11 +263,11 @@ public:
         {
             if (rank == 1)
             {
-                if (tiles[rank + 1][file] == ' ')
+                if (tiles[rank + 1][file].icon == ' ')
                 {
                     //If in the starting position, the pawn can move 1 or 2 tiles
                     moves.push_back(make_pair(rank + 1, file));
-                    if (tiles[rank + 2][file] == ' ')
+                    if (tiles[rank + 2][file].icon == ' ')
                     {
                         moves.push_back(make_pair(rank + 2, file));
                     }
@@ -250,14 +276,14 @@ public:
             else if (rank < 7)
             {
                 //If not in the starting position, the pawn can only move 1 tile forward
-                if (tiles[rank + 1][file] == ' ')
+                if (tiles[rank + 1][file].icon == ' ')
                 {
                     moves.push_back(make_pair(rank + 1, file));
                 }
             }
             // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
                 // possibly add a last_move variable to the class to store the last move
-            if (rank < 7 && file < 7 && tiles[rank + 1][file + 1] != ' ' && is_white_turn)
+            if (rank < 7 && file < 7 && tiles[rank + 1][file + 1].icon != ' ' && is_white_turn)
             {
                 // If there is an enemy piece diagonally to the right, the pawn can capture it (en passant)
                 moves.push_back(make_pair(rank + 1, file + 1));
