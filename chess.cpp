@@ -8,7 +8,7 @@ private:
     char piece; // type of piece
     int file;   // column
     int rank;   // row
-    bool is_white;
+    bool is_white = true;
     bool is_captured = false;
 
 public:
@@ -114,13 +114,12 @@ public:
     void move_piece(string &move)
     {
         char piece = move[0];
-        int file = move[1] - 'a'; // column
+        int file = move[1] - 'a';       // column
         int rank = 7 - (move[2] - '1'); // row
         int target_file = move[3] - 'a';
         int target_rank = 7 - (move[4] - '1');
 
-        //TODO Check if it is the player's turn
-        
+        // TODO Check if it is the player's turn
 
         // Check if move is out of bounds
         if (file < 0 || file > 7 ||
@@ -145,11 +144,162 @@ public:
             return;
         }
 
+        vector<pair<int, int>> validTiles = calculate_possible_moves(piece, rank, file);
+        
+        // Check if the move is valid
+        bool is_move_valid = false;
+        for (int i = 0; i < validTiles.size(); i++)
+        {
+            if (validTiles[i].first == target_rank && validTiles[i].second == target_file)
+            {
+                is_move_valid = true;
+                break;
+            }
+        }
+        if (!is_move_valid)
+        {
+            std::cout << "Invalid move." << std::endl;
+            return;
+        }
+        
+        
+
         tiles[rank][file] = ' ';
         tiles[target_rank][target_file] = piece;
+        is_white_turn = !is_white_turn;
         std::cout << "Last move: " << move << std::endl;
+    }
 
-        // calculate_possible_moves(Chess_Piece piece, char[] board);
+    vector<pair<int, int>> calculate_possible_moves(char piece, int rank, int file)
+    {
+        vector<pair<int, int>> validTiles;
+        switch (piece)
+        {
+        case 'P':
+            validTiles = calculate_pawn_moves(rank, file);
+            break;
+        case 'R':
+            validTiles = calculate_rook_moves(rank, file);
+            break;
+        case 'N':
+            validTiles = calculate_knight_moves(rank, file);
+            break;
+        case 'B':
+            validTiles = calculate_bishop_moves(rank, file);
+            break;
+        case 'Q':
+            validTiles = calculate_queen_moves(rank, file);
+            break;
+        case 'K':
+            validTiles = calculate_king_moves(rank, file);
+            break;
+        default:
+            break;
+        }
+        return validTiles;
+    }
+
+    vector<pair<int, int>> calculate_pawn_moves(int rank, int file)
+    {
+        vector<pair<int, int>> moves;
+        // Add pawn move logic here
+        if (is_white_turn)
+        {
+            if (rank == 6)
+            {
+                if (tiles[rank - 1][file] == ' ')
+                {
+                    //If in the starting position, the pawn can move 1 or 2 tiles
+                    moves.push_back(make_pair(rank - 1, file));
+                    if (tiles[rank - 2][file] == ' ')
+                    {
+                        moves.push_back(make_pair(rank - 2, file));
+                    }
+                }
+            }
+            else if (rank > 0)
+            {
+                //If not in the starting position, the pawn can only move 1 tile forward
+                if (tiles[rank - 1][file] == ' ')
+                {
+                    moves.push_back(make_pair(rank - 1, file));
+                }
+            }
+            // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
+                // possibly add a last_move variable to the class to store the last move
+            if (rank > 0 && file > 0 && tiles[rank - 1][file - 1] != ' ' && !is_white_turn)
+            {
+                // If there is an enemy piece diagonally to the left, the pawn can capture it (en passant)
+                moves.push_back(make_pair(rank - 1, file - 1));
+            }
+        }
+        else
+        {
+            if (rank == 1)
+            {
+                if (tiles[rank + 1][file] == ' ')
+                {
+                    //If in the starting position, the pawn can move 1 or 2 tiles
+                    moves.push_back(make_pair(rank + 1, file));
+                    if (tiles[rank + 2][file] == ' ')
+                    {
+                        moves.push_back(make_pair(rank + 2, file));
+                    }
+                }
+            }
+            else if (rank < 7)
+            {
+                //If not in the starting position, the pawn can only move 1 tile forward
+                if (tiles[rank + 1][file] == ' ')
+                {
+                    moves.push_back(make_pair(rank + 1, file));
+                }
+            }
+            // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
+                // possibly add a last_move variable to the class to store the last move
+            if (rank < 7 && file < 7 && tiles[rank + 1][file + 1] != ' ' && is_white_turn)
+            {
+                // If there is an enemy piece diagonally to the right, the pawn can capture it (en passant)
+                moves.push_back(make_pair(rank + 1, file + 1));
+            }
+        }
+        
+        return moves;
+    }
+
+    vector<pair<int, int>> calculate_rook_moves(int rank, int file)
+    {
+        vector<pair<int, int>> moves;
+        // Add rook move logic here
+        return moves;
+    }
+
+    vector<pair<int, int>> calculate_knight_moves(int rank, int file)
+    {
+        vector<pair<int, int>> moves;
+        // Add knight move logic here
+        return moves;
+    }
+
+    vector<pair<int, int>> calculate_bishop_moves(int rank, int file)
+    {
+        vector<pair<int, int>> moves;
+        // Add bishop move logic here
+        return moves;
+    }
+
+    vector<pair<int, int>> calculate_queen_moves(int rank, int file)
+    {
+        vector<pair<int, int>> moves;
+        // Add queen move logic here
+        return moves;
+    }
+
+    vector<pair<int, int>> calculate_king_moves(int rank, int file)
+    {
+        vector<pair<int, int>> moves;
+        // Add king move logic here
+        return moves;
     }
 };
 
@@ -205,31 +355,4 @@ int main()
 
 // void show_possible_moves(string &move)
 // {
-// }
-
-// vector<char> calculate_possible_moves(Chess_Piece piece, char[] board)
-// {
-//     vector<char> possible_moves;
-//     switch (piece.piece)
-//     {
-//     case 'P':
-//         possible_moves = calculate_pawn_moves(piece, board);
-//         break;
-//     case 'R':
-//         possible_moves = calculate_rook_moves(piece, board);
-//         break;
-//     case 'N':
-//         possible_moves = calculate_knight_moves(piece, board);
-//         break;
-//     case 'B':
-//         possible_moves = calculate_bishop_moves(piece, board);
-//         break;
-//     case 'Q':
-//         possible_moves = calculate_queen_moves(piece, board);
-//         break;
-//     case 'K':
-//         possible_moves = calculate_king_moves(piece, board);
-//         break;
-//     }
-//     return possible_moves;
 // }
