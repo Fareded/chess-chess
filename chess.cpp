@@ -31,9 +31,10 @@ public:
     bool isWhite() { return is_white; }
     bool isCaptured() { return is_captured; }
     void pieceMoved() { is_moved = true; }
-    void setCaptured() { 
+    void setCaptured()
+    {
         std::cout << "Piece captured:" << icon << std::endl;
-        is_captured = true; 
+        is_captured = true;
     }
 };
 
@@ -189,13 +190,14 @@ public:
         {
             std::cout << "Invalid move." << std::endl;
             return;
-        }else if (move_result.second == true)
+        }
+        else if (move_result.second == true)
         {
             std::cout << "Piece captured." << std::endl;
             tiles[target_tile[0]][target_tile[1]].piece->setCaptured();
             tiles[target_tile[0]][target_tile[1]].empty_tile();
         }
-        
+
         // Move the piece
         tiles[rank][file].piece->pieceMoved();
         tiles[target_rank][target_file].set_tile(tiles[rank][file].piece);
@@ -223,9 +225,9 @@ public:
         case 'B':
             return calculate_bishop_moves(rank, file, target_tile);
             break;
-        // case 'Q':
-        //     return calculate_queen_moves(rank, file);
-        //     break;
+        case 'Q':
+            return calculate_queen_moves(rank, file, target_tile);
+            break;
         case 'K':
             return calculate_king_moves(rank, file, target_tile);
             break;
@@ -394,11 +396,12 @@ public:
     pair<bool, bool> calculate_knight_moves(int rank, int file, int target_tile[2])
     {
         bool captured_piece = false;
-        if((rank + 2 == target_tile[0] && (file + 1 || file - 1 == target_tile[1])) ||
-        (rank + 1 == target_tile[0] && (file + 2 || file - 2 == target_tile[1])) ||
-        (rank - 2 == target_tile[0] && (file + 1 || file - 1 == target_tile[1])) ||
-        (rank - 1 == target_tile[0] && (file + 2 || file - 2 == target_tile[1]))){
-            if(tiles[target_tile[0]][target_tile[1]].piece != nullptr)
+        if ((rank + 2 == target_tile[0] && (file + 1 || file - 1 == target_tile[1])) ||
+            (rank + 1 == target_tile[0] && (file + 2 || file - 2 == target_tile[1])) ||
+            (rank - 2 == target_tile[0] && (file + 1 || file - 1 == target_tile[1])) ||
+            (rank - 1 == target_tile[0] && (file + 2 || file - 2 == target_tile[1])))
+        {
+            if (tiles[target_tile[0]][target_tile[1]].piece != nullptr)
             {
                 if (tiles[target_tile[0]][target_tile[1]].piece->isWhite() != is_white_turn)
                 {
@@ -410,7 +413,9 @@ public:
                 }
             }
             return make_pair(true, captured_piece);
-        }else{
+        }
+        else
+        {
             return make_pair(false, false);
         }
 
@@ -440,7 +445,7 @@ public:
                 j += col_dir;
             }
             // Check if the target tile is occupied by an piece to capture
-            if(tiles[target_tile[0]][target_tile[1]].piece != nullptr)
+            if (tiles[target_tile[0]][target_tile[1]].piece != nullptr)
             {
                 if (tiles[target_tile[0]][target_tile[1]].piece->isWhite() != is_white_turn)
                 {
@@ -456,12 +461,25 @@ public:
         return make_pair(false, false);
     }
 
-    // pair<bool, bool> calculate_queen_moves(int rank, int file)
-    // {
-    //     vector<pair<int, int>> moves;
-    //     // Add queen move logic here
-    //     return moves;
-    // }
+    pair<bool, bool> calculate_queen_moves(int rank, int file, int target_tile[2])
+    {
+        // The queen's movement pattern is a combination of the rook and bishop movement patterns
+        pair<bool, bool> rook_moves = calculate_rook_moves(rank, file, target_tile);
+        pair<bool, bool> bishop_moves = calculate_bishop_moves(rank, file, target_tile);
+
+        if (rook_moves.first)
+        {
+            return rook_moves;
+        }
+        else if (bishop_moves.first)
+        {
+            return bishop_moves;
+        }
+        else
+        {
+            return make_pair(false, false);
+        }
+    }
 
     pair<bool, bool> calculate_king_moves(int rank, int file, int target_tile[2])
     {
@@ -471,7 +489,7 @@ public:
         if (abs(rank - target_tile[0]) <= 1 && abs(file - target_tile[1]) <= 1)
         {
             // Check if the target tile has a capturable piece
-            if(tiles[target_tile[0]][target_tile[1]].piece != nullptr)
+            if (tiles[target_tile[0]][target_tile[1]].piece != nullptr)
             {
                 if (tiles[target_tile[0]][target_tile[1]].piece->isWhite() != is_white_turn)
                 {
@@ -502,10 +520,11 @@ int main()
 
     while (true)
     {
-        if(board.isWhiteTurn())
+        if (board.isWhiteTurn())
         {
             std::cout << "White's turn." << std::endl;
-        }else
+        }
+        else
         {
             std::cout << "Black's turn." << std::endl;
         }
