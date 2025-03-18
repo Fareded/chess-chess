@@ -91,7 +91,7 @@ public:
         for (int i = 0; i < 8; i++)
         {
             pieces[8 + i] = Chess_Piece('P', 'a' + i, '2', true);
-            pieces[8 + i].setCaptured();
+            // pieces[8 + i].setCaptured();
         }
 
         pieces[16] = Chess_Piece('R', 'a', '8', false);
@@ -226,9 +226,9 @@ public:
         // case 'Q':
         //     return calculate_queen_moves(rank, file);
         //     break;
-        // case 'K':
-        //     return calculate_king_moves(rank, file);
-        //     break;
+        case 'K':
+            return calculate_king_moves(rank, file, target_tile);
+            break;
         default:
             return make_pair(false, false);
             break;
@@ -444,12 +444,29 @@ public:
     //     return moves;
     // }
 
-    // pair<bool, bool> calculate_king_moves(int rank, int file)
-    // {
-    //     vector<pair<int, int>> moves;
-    //     // Add king move logic here
-    //     return moves;
-    // }
+    pair<bool, bool> calculate_king_moves(int rank, int file, int target_tile[2])
+    {
+        bool captured_piece = false;
+
+        // Check if the target tile is within 1 tile of the king
+        if (abs(rank - target_tile[0]) <= 1 && abs(file - target_tile[1]) <= 1)
+        {
+            // Check if the target tile has a capturable piece
+            if(tiles[target_tile[0]][target_tile[1]].piece != nullptr)
+            {
+                if (tiles[target_tile[0]][target_tile[1]].piece->isWhite() != is_white_turn)
+                {
+                    captured_piece = true;
+                }
+                else
+                {
+                    return make_pair(false, false);
+                }
+            }
+            return make_pair(true, captured_piece);
+        }
+        return make_pair(false, false);
+    }
 };
 
 void help_message()
