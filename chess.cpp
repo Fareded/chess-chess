@@ -184,7 +184,7 @@ public:
         }
 
         int target_tile[2] = {target_rank, target_file};
-        pair<int, int> move_result = calculate_possible_moves(piece, rank, file, target_tile);
+        pair<int, int> move_result = movement_logic(piece, rank, file, target_tile);
 
         if (move_result.first == false)
         {
@@ -208,28 +208,28 @@ public:
     }
 
     // Returns a pair of bools, the first bool is true if the move is valid, the second bool is true if a piece was captured
-    pair<bool, bool> calculate_possible_moves(char piece, int rank, int file, int target_tile[2])
+    pair<bool, bool> movement_logic(char piece, int rank, int file, int target_tile[2])
     {
 
         switch (piece)
         {
         case 'P':
-            return calculate_pawn_moves(rank, file, target_tile);
+            return pawn_logic(rank, file, target_tile);
             break;
         case 'R':
-            return calculate_rook_moves(rank, file, target_tile);
+            return rook_logic(rank, file, target_tile);
             break;
         case 'N':
-            return calculate_knight_moves(rank, file, target_tile);
+            return knight_logic(rank, file, target_tile);
             break;
         case 'B':
-            return calculate_bishop_moves(rank, file, target_tile);
+            return bishop_logic(rank, file, target_tile);
             break;
         case 'Q':
-            return calculate_queen_moves(rank, file, target_tile);
+            return queen_logic(rank, file, target_tile);
             break;
         case 'K':
-            return calculate_king_moves(rank, file, target_tile);
+            return king_logic(rank, file, target_tile);
             break;
         default:
             return make_pair(false, false);
@@ -237,7 +237,7 @@ public:
         }
     }
 
-    pair<bool, bool> calculate_pawn_moves(int rank, int file, int target_tile[2])
+    pair<bool, bool> pawn_logic(int rank, int file, int target_tile[2])
     {
         vector<pair<int, int>> moves;
         bool captured_piece = false;
@@ -333,7 +333,7 @@ public:
         return make_pair(is_move_valid, captured_piece);
     }
 
-    pair<bool, bool> calculate_rook_moves(int rank, int file, int target_tile[2])
+    pair<bool, bool> rook_logic(int rank, int file, int target_tile[2])
     {
         vector<pair<int, int>> moves;
         bool captured_piece = false;
@@ -393,7 +393,7 @@ public:
         return make_pair(false, false);
     }
 
-    pair<bool, bool> calculate_knight_moves(int rank, int file, int target_tile[2])
+    pair<bool, bool> knight_logic(int rank, int file, int target_tile[2])
     {
         bool captured_piece = false;
         if ((rank + 2 == target_tile[0] && (file + 1 || file - 1 == target_tile[1])) ||
@@ -422,7 +422,7 @@ public:
         return make_pair(false, false);
     }
 
-    pair<bool, bool> calculate_bishop_moves(int rank, int file, int target_tile[2])
+    pair<bool, bool> bishop_logic(int rank, int file, int target_tile[2])
     {
         bool captured_piece = false;
 
@@ -461,11 +461,11 @@ public:
         return make_pair(false, false);
     }
 
-    pair<bool, bool> calculate_queen_moves(int rank, int file, int target_tile[2])
+    pair<bool, bool> queen_logic(int rank, int file, int target_tile[2])
     {
         // The queen's movement pattern is a combination of the rook and bishop movement patterns
-        pair<bool, bool> rook_moves = calculate_rook_moves(rank, file, target_tile);
-        pair<bool, bool> bishop_moves = calculate_bishop_moves(rank, file, target_tile);
+        pair<bool, bool> rook_moves = rook_logic(rank, file, target_tile);
+        pair<bool, bool> bishop_moves = bishop_logic(rank, file, target_tile);
 
         if (rook_moves.first)
         {
@@ -481,7 +481,7 @@ public:
         }
     }
 
-    pair<bool, bool> calculate_king_moves(int rank, int file, int target_tile[2])
+    pair<bool, bool> king_logic(int rank, int file, int target_tile[2])
     {
         bool captured_piece = false;
 
@@ -502,6 +502,20 @@ public:
             }
             return make_pair(true, captured_piece);
         }
+        return make_pair(false, false);
+    }
+
+    pair<bool, bool> castling_logic()
+    {
+        
+        return make_pair(false, false);
+    }
+
+    pair<bool, bool> check_logic()
+    {
+        // Check if the king is in check
+        // Check if the king can move out of check
+        // Check if the attacking piece can be captured
         return make_pair(false, false);
     }
 };
