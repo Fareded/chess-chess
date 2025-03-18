@@ -217,9 +217,9 @@ public:
         case 'R':
             return calculate_rook_moves(rank, file, target_tile);
             break;
-        // case 'N':
-        //     return calculate_knight_moves(rank, file);
-        //     break;
+        case 'N':
+            return calculate_knight_moves(rank, file, target_tile);
+            break;
         case 'B':
             return calculate_bishop_moves(rank, file, target_tile);
             break;
@@ -391,12 +391,31 @@ public:
         return make_pair(false, false);
     }
 
-    // pair<bool, bool> calculate_knight_moves(int rank, int file)
-    // {
-    //     vector<pair<int, int>> moves;
-    //     // Add knight move logic here
-    //     return moves;
-    // }
+    pair<bool, bool> calculate_knight_moves(int rank, int file, int target_tile[2])
+    {
+        bool captured_piece = false;
+        if((rank + 2 == target_tile[0] && (file + 1 || file - 1 == target_tile[1])) ||
+        (rank + 1 == target_tile[0] && (file + 2 || file - 2 == target_tile[1])) ||
+        (rank - 2 == target_tile[0] && (file + 1 || file - 1 == target_tile[1])) ||
+        (rank - 1 == target_tile[0] && (file + 2 || file - 2 == target_tile[1]))){
+            if(tiles[target_tile[0]][target_tile[1]].piece != nullptr)
+            {
+                if (tiles[target_tile[0]][target_tile[1]].piece->isWhite() != is_white_turn)
+                {
+                    captured_piece = true;
+                }
+                else
+                {
+                    return make_pair(false, false);
+                }
+            }
+            return make_pair(true, captured_piece);
+        }else{
+            return make_pair(false, false);
+        }
+
+        return make_pair(false, false);
+    }
 
     pair<bool, bool> calculate_bishop_moves(int rank, int file, int target_tile[2])
     {
