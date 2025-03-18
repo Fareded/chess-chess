@@ -91,7 +91,7 @@ public:
         for (int i = 0; i < 8; i++)
         {
             pieces[8 + i] = Chess_Piece('P', 'a' + i, '2', true);
-            // pieces[8 + i].setCaptured();
+            pieces[8 + i].setCaptured();
         }
 
         pieces[16] = Chess_Piece('R', 'a', '8', false);
@@ -220,9 +220,9 @@ public:
         // case 'N':
         //     return calculate_knight_moves(rank, file);
         //     break;
-        // case 'B':
-        //     return calculate_bishop_moves(rank, file);
-        //     break;
+        case 'B':
+            return calculate_bishop_moves(rank, file, target_tile);
+            break;
         // case 'Q':
         //     return calculate_queen_moves(rank, file);
         //     break;
@@ -398,12 +398,44 @@ public:
     //     return moves;
     // }
 
-    // pair<bool, bool> calculate_bishop_moves(int rank, int file)
-    // {
-    //     vector<pair<int, int>> moves;
-    //     // Add bishop move logic here
-    //     return moves;
-    // }
+    pair<bool, bool> calculate_bishop_moves(int rank, int file, int target_tile[2])
+    {
+        bool captured_piece = false;
+
+        // Check if the target tile is diagonally aligned with the bishop
+        if (abs(rank - target_tile[0]) == abs(file - target_tile[1]))
+        {
+            int row_dir = (target_tile[0] - rank) / abs(target_tile[0] - rank);
+            int col_dir = (target_tile[1] - file) / abs(target_tile[1] - file);
+            int i = rank + row_dir;
+            int j = file + col_dir;
+
+            // Check if there are any pieces in between the bishop and the target tile
+            while (i != target_tile[0] && j != target_tile[1])
+            {
+                if (tiles[i][j].icon != ' ')
+                {
+                    return make_pair(false, false);
+                }
+                i += row_dir;
+                j += col_dir;
+            }
+            // Check if the target tile is occupied by an piece to capture
+            if(tiles[target_tile[0]][target_tile[1]].piece != nullptr)
+            {
+                if (tiles[target_tile[0]][target_tile[1]].piece->isWhite() != is_white_turn)
+                {
+                    captured_piece = true;
+                }
+                else
+                {
+                    return make_pair(false, false);
+                }
+            }
+            return make_pair(true, captured_piece);
+        }
+        return make_pair(false, false);
+    }
 
     // pair<bool, bool> calculate_queen_moves(int rank, int file)
     // {
