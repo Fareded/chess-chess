@@ -117,7 +117,7 @@ public:
             pieces[24 + i] = Chess_Piece('P', 'a' + i, '7', false);
         }
 
-        // pieces[4] = Chess_Piece('Q', 'd', '5', true);
+        pieces[4] = Chess_Piece('K', 'd', '6', true);
 
         set_pieces();
     };
@@ -142,7 +142,7 @@ public:
         }
     }
 
-    void display_board(vector<pair<int, int>> possible_moves = {})
+    void display_board()
     {
 
         std::cout << "   a b c d e f g h" << std::endl;
@@ -949,6 +949,67 @@ public:
 
     void calculate_king_moves(int rank, int file)
     {
+        vector<pair<int, int>> possibleMoves;
+        Chess_Piece *king = tiles[rank][file].piece;
+
+        if (rank + 1 < 8)
+        {
+            if (tiles[rank + 1][file].icon == ' ' || tiles[rank + 1][file].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank + 1, file));
+            }
+        }
+        if (rank - 1 >= 0)
+        {
+            if (tiles[rank - 1][file].icon == ' ' || tiles[rank - 1][file].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank - 1, file));
+            }
+        }
+        if (file + 1 < 8)
+        {
+            if (tiles[rank][file + 1].icon == ' ' || tiles[rank][file + 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank, file + 1));
+            }
+        }
+        if (file - 1 >= 0)
+        {
+            if (tiles[rank][file - 1].icon == ' ' || tiles[rank][file - 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank, file - 1));
+            }
+        }
+        if (rank + 1 < 8 && file + 1 < 8)
+        {
+            if (tiles[rank + 1][file + 1].icon == ' ' || tiles[rank + 1][file + 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank + 1, file + 1));
+            }
+        }
+        if (rank + 1 < 8 && file - 1 >= 0)
+        {
+            if (tiles[rank + 1][file - 1].icon == ' ' || tiles[rank + 1][file - 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank + 1, file - 1));
+            }
+        }
+        if (rank - 1 >= 0 && file + 1 < 8)
+        {
+            if (tiles[rank - 1][file + 1].icon == ' ' || tiles[rank - 1][file + 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank - 1, file + 1));
+            }
+        }
+        if (rank - 1 >= 0 && file - 1 >= 0)
+        {
+            if (tiles[rank - 1][file - 1].icon == ' ' || tiles[rank - 1][file - 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank - 1, file - 1));
+            }
+        }
+
+        king->addPossibleMoves(possibleMoves);
     }
 };
 
