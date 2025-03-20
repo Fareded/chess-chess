@@ -102,7 +102,6 @@ public:
         for (int i = 0; i < 8; i++)
         {
             pieces[8 + i] = Chess_Piece('P', 'a' + i, '2', true);
-            // pieces[8 + i].setCaptured();
         }
 
         pieces[16] = Chess_Piece('R', 'a', '8', false);
@@ -117,6 +116,8 @@ public:
         {
             pieces[24 + i] = Chess_Piece('P', 'a' + i, '7', false);
         }
+
+        pieces[4] = Chess_Piece('Q', 'd', '5', true);
 
         set_pieces();
     };
@@ -706,7 +707,7 @@ public:
         tiles[rank][file].piece->addPossibleMoves(possibleMoves);
     }
 
-    void calculate_rook_moves(int rank, int file)
+    vector<pair<int, int>> calculate_rook_moves(int rank, int file)
     {
         vector<pair<int, int>> possibleMoves;
         Chess_Piece *rook = tiles[rank][file].piece;
@@ -773,13 +774,78 @@ public:
         }
 
         rook->addPossibleMoves(possibleMoves);
+        return possibleMoves;
     }
 
     void calculate_knight_moves(int rank, int file)
     {
+        vector<pair<int, int>> possibleMoves;
+        Chess_Piece *knight = tiles[rank][file].piece;
+
+        if (rank + 2 < 8 && file + 1 < 8)
+        {
+            if (tiles[rank + 2][file + 1].icon == ' ' || tiles[rank + 2][file + 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank + 2, file + 1));
+            }
+        }
+        if (rank + 1 < 8 && file + 2 < 8)
+        {
+            if (tiles[rank + 1][file + 2].icon == ' ' || tiles[rank + 1][file + 2].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank + 1, file + 2));
+            }
+        }
+        if (rank - 2 >= 0 && file + 1 < 8)
+        {
+            if (tiles[rank - 2][file + 1].icon == ' ' || tiles[rank - 2][file + 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank - 2, file + 1));
+            }
+        }
+        if (rank - 1 >= 0 && file + 2 < 8)
+        {
+            if (tiles[rank - 1][file + 2].icon == ' ' || tiles[rank - 1][file + 2].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank - 1, file + 2));
+            }
+        }
+        if (rank + 2 < 8 && file - 1 >= 0)
+        {
+            if (tiles[rank + 2][file - 1].icon == ' ' || tiles[rank + 2][file - 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank + 2, file - 1));
+            }
+        }
+        if (rank + 1 < 8 && file - 2 >= 0)
+        {
+            if (tiles[rank + 1][file - 2].icon == ' ' || tiles[
+                rank + 1][file - 2].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank + 1, file - 2));
+            }
+        }
+        if (rank - 2 >= 0 && file - 1 >= 0)
+        {
+            if (tiles[rank - 2][file - 1].icon == ' ' || tiles[
+                rank - 2][file - 1].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank - 2, file - 1));
+            }
+        }
+        if (rank - 1 >= 0 && file - 2 >= 0)
+        {
+            if (tiles[rank - 1][file - 2].icon == ' ' || tiles[
+                rank - 1][file - 2].piece->isWhite() != is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank - 1, file - 2));
+            }
+        }
+
+        knight->addPossibleMoves(possibleMoves);
     }
 
-    void calculate_bishop_moves(int rank, int file)
+    vector<pair<int, int>> calculate_bishop_moves(int rank, int file)
     {
     }
 
