@@ -117,7 +117,7 @@ public:
             pieces[24 + i] = Chess_Piece('P', 'a' + i, '7', false);
         }
 
-        pieces[4] = Chess_Piece('Q', 'd', '5', true);
+        // pieces[4] = Chess_Piece('Q', 'd', '5', true);
 
         set_pieces();
     };
@@ -934,6 +934,17 @@ public:
 
     void calculate_queen_moves(int rank, int file)
     {
+        vector<pair<int, int>> possibleMoves;
+        Chess_Piece *queen = tiles[rank][file].piece;
+
+        // Calculate possible moves as a combination of the bishop's and rook's
+        vector<pair<int, int>> rook_moves = calculate_rook_moves(rank, file);
+        vector<pair<int, int>> bishop_moves = calculate_bishop_moves(rank, file);
+
+        possibleMoves.insert(possibleMoves.end(), rook_moves.begin(), rook_moves.end());
+        possibleMoves.insert(possibleMoves.end(), bishop_moves.begin(), bishop_moves.end());
+
+        queen->addPossibleMoves(possibleMoves);
     }
 
     void calculate_king_moves(int rank, int file)
