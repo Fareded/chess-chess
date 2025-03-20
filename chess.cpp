@@ -11,6 +11,8 @@ private:
     bool is_white = true;
     bool is_captured = false;
     bool is_moved = false;
+    vector<pair<int, int>> possible_moves; // tiles that the piece could move to
+    vector<Chess_Piece *> blocking_pieces; // pieces that are blocking the possible path(s)
 
 public:
     Chess_Piece() : icon(' '), file(' '), rank(' '), is_white(false), is_captured(false) {}
@@ -28,14 +30,17 @@ public:
     char getIcon() { return icon; }
     char getRank() { return rank; }
     char getFile() { return file; }
+    vector<pair<int, int>> getPossibleMoves() { return possible_moves; }
     bool isWhite() { return is_white; }
     bool isCaptured() { return is_captured; }
+    bool isMoved() { return is_moved; }
     void pieceMoved() { is_moved = true; }
     void setCaptured()
     {
         std::cout << "Piece captured:" << icon << std::endl;
         is_captured = true;
     }
+    void addPossibleMoves(vector<pair<int, int>> moves) { possible_moves = moves; }
 };
 
 class Chess_Board
@@ -45,6 +50,7 @@ private:
     {
         char icon = ' ';
         Chess_Piece *piece;
+        bool highlight = false;
 
         tile(char piece_icon, Chess_Piece *piece)
         {
@@ -62,6 +68,10 @@ private:
             this->piece = piece;
             icon = piece->getIcon();
             return icon;
+        }
+        void setHighlight(bool highlight)
+        {
+            this->highlight = highlight;
         }
     };
     Chess_Piece pieces[32];
@@ -131,8 +141,9 @@ public:
         }
     }
 
-    void display_board()
+    void display_board(vector<pair<int, int>> possible_moves = {})
     {
+
         std::cout << "   a b c d e f g h" << std::endl;
         std::cout << "   ---------------" << std::endl;
         for (int i = 0; i < 8; i++)
@@ -140,7 +151,14 @@ public:
             std::cout << 8 - i << "| ";
             for (int j = 0; j < 8; j++)
             {
-                std::cout << tiles[i][j].icon << " ";
+                if (tiles[i][j].highlight)
+                {
+                    std::cout << "* ";
+                }
+                else
+                {
+                    std::cout << tiles[i][j].icon << " ";
+                }
             }
             std::cout << "|" << 8 - i << " ";
             std::cout << std::endl;
@@ -239,12 +257,16 @@ public:
 
     pair<bool, bool> pawn_logic(int rank, int file, int target_tile[2])
     {
-        vector<pair<int, int>> moves;
+        vector<pair<int, int>> possibleMoves;
         bool captured_piece = false;
+
+        // TODO find all moves
+        // TODO pawn promotion
 
         // Add pawn move logic here
         if (is_white_turn)
         {
+            //
             if (target_tile[0] == rank - 1 &&
                 (target_tile[1] == file - 1 || target_tile[1] == file + 1) &&
                 tiles[target_tile[0]][target_tile[1]].icon != ' ')
@@ -256,10 +278,10 @@ public:
                 if (tiles[rank - 1][file].icon == ' ')
                 {
                     // If in the starting position, the pawn can move 1 or 2 tiles
-                    moves.push_back(make_pair(rank - 1, file));
+                    possibleMoves.push_back(make_pair(rank - 1, file));
                     if (tiles[rank - 2][file].icon == ' ')
                     {
-                        moves.push_back(make_pair(rank - 2, file));
+                        possibleMoves.push_back(make_pair(rank - 2, file));
                     }
                 }
             }
@@ -268,7 +290,7 @@ public:
                 // If not in the starting position, the pawn can only move 1 tile forward
                 if (tiles[rank - 1][file].icon == ' ')
                 {
-                    moves.push_back(make_pair(rank - 1, file));
+                    possibleMoves.push_back(make_pair(rank - 1, file));
                 }
             }
             // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
@@ -276,7 +298,7 @@ public:
             if (rank > 0 && file > 0 && tiles[rank - 1][file - 1].icon != ' ' && !is_white_turn)
             {
                 // If there is an enemy piece diagonally to the left, the pawn can capture it (en passant)
-                moves.push_back(make_pair(rank - 1, file - 1));
+                possibleMoves.push_back(make_pair(rank - 1, file - 1));
             }
         }
         else
@@ -295,10 +317,10 @@ public:
                 if (tiles[rank + 1][file].icon == ' ')
                 {
                     // If in the starting position, the pawn can move 1 or 2 tiles
-                    moves.push_back(make_pair(rank + 1, file));
+                    possibleMoves.push_back(make_pair(rank + 1, file));
                     if (tiles[rank + 2][file].icon == ' ')
                     {
-                        moves.push_back(make_pair(rank + 2, file));
+                        possibleMoves.push_back(make_pair(rank + 2, file));
                     }
                 }
             }
@@ -307,7 +329,7 @@ public:
                 // If not in the starting position, the pawn can only move 1 tile forward
                 if (tiles[rank + 1][file].icon == ' ')
                 {
-                    moves.push_back(make_pair(rank + 1, file));
+                    possibleMoves.push_back(make_pair(rank + 1, file));
                 }
             }
             // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
@@ -315,27 +337,26 @@ public:
             if (rank < 7 && file < 7 && tiles[rank + 1][file + 1].icon != ' ' && is_white_turn)
             {
                 // If there is an enemy piece diagonally to the right, the pawn can capture it (en passant)
-                moves.push_back(make_pair(rank + 1, file + 1));
+                possibleMoves.push_back(make_pair(rank + 1, file + 1));
             }
         }
 
         // Check if the move is valid
         bool is_move_valid = false;
-        for (size_t i = 0; i < moves.size(); i++)
+        for (size_t i = 0; i < possibleMoves.size(); i++)
         {
-            if (moves[i].first == target_tile[0] && moves[i].second == target_tile[1])
+            if (possibleMoves[i].first == target_tile[0] && possibleMoves[i].second == target_tile[1])
             {
                 is_move_valid = true;
                 break;
             }
         }
-
         return make_pair(is_move_valid, captured_piece);
     }
 
     pair<bool, bool> rook_logic(int rank, int file, int target_tile[2])
     {
-        vector<pair<int, int>> moves;
+        vector<pair<int, int>> possibleMoves;
         bool captured_piece = false;
 
         // Check if the target tile is in the same row or column
@@ -507,7 +528,19 @@ public:
 
     pair<bool, bool> castling_logic()
     {
-        
+        // Check if the king and rook have been moved already
+        if (tiles[0][4].piece->isMoved() || tiles[0][7].piece->isMoved())
+        {
+            return make_pair(false, false);
+        }
+        // Check if the king is in check
+
+        // Check if the king will move through check
+        // Check if the king will move into check
+        // Check if the king will move out of check
+        // Check if the rook will move through check
+        // Check if the rook will move into check
+        // Check if the rook will move out of check
         return make_pair(false, false);
     }
 
@@ -517,6 +550,171 @@ public:
         // Check if the king can move out of check
         // Check if the attacking piece can be captured
         return make_pair(false, false);
+    }
+
+    void show_possible_moves(string &move)
+    {
+        int rank = 7 - (move[1] - '1'); // row
+        int file = move[0] - 'a';       // column
+        char piece = tiles[rank][file].icon;
+
+        if (tiles[rank][file].icon == ' ')
+        {
+            std::cout << "No piece at this position" << std::endl;
+            return;
+        }
+
+        if (tiles[rank][file].icon != piece)
+        {
+            std::cout << "Wrong piece." << std::endl;
+            return;
+        }
+
+        calculate_possible_moves(rank, file, piece);
+        vector<pair<int, int>> possible_moves = tiles[rank][file].piece->getPossibleMoves();
+
+        // Display the board with the possible moves highlighted
+        for (size_t i = 0; i < possible_moves.size(); i++)
+        {
+            int rank = possible_moves[i].first;
+            int file = possible_moves[i].second;
+            tiles[rank][file].setHighlight(true);
+        }
+        display_board();
+        for (size_t i = 0; i < possible_moves.size(); i++)
+        {
+            int rank = possible_moves[i].first;
+            int file = possible_moves[i].second;
+            tiles[rank][file].setHighlight(false);
+        }
+    }
+
+    void calculate_possible_moves(int rank, int file, char piece)
+    {
+        switch (piece)
+        {
+        case 'P':
+            calculate_pawn_moves(rank, file);
+            break;
+        case 'R':
+            calculate_rook_moves(rank, file);
+            break;
+        case 'N':
+            calculate_knight_moves(rank, file);
+            break;
+        case 'B':
+            calculate_bishop_moves(rank, file);
+            break;
+        case 'Q':
+            calculate_queen_moves(rank, file);
+            break;
+        case 'K':
+            calculate_king_moves(rank, file);
+            break;
+        default:
+            break;
+        }
+    }
+
+    void calculate_pawn_moves(int rank, int file)
+    {
+        vector<pair<int, int>> possibleMoves;
+        Chess_Piece *pawn = tiles[rank][file].piece;
+
+        if (pawn->isWhite())
+        {
+            if (rank == 6)
+            {
+                if (tiles[rank - 1][file].icon == ' ')
+                {
+                    // If in the starting position, the pawn can move 1 or 2 tiles
+                    possibleMoves.push_back(make_pair(rank - 1, file));
+                    if (tiles[rank - 2][file].icon == ' ')
+                    {
+                        possibleMoves.push_back(make_pair(rank - 2, file));
+                    }
+                }
+            }
+            // If not in the starting position, the pawn can only move 1 tile forward
+            else if (rank > 0)
+            {
+                if (tiles[rank - 1][file].icon == ' ')
+                {
+                    possibleMoves.push_back(make_pair(rank - 1, file));
+                }
+            }
+
+            // Capturable pieces
+            if (tiles[rank - 1][file - 1].icon != ' ' && !is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank - 1, file - 1));
+            }
+            if (tiles[rank - 1][file + 1].icon != ' ' && !is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank - 1, file + 1));
+            }
+
+            // TODO en passant - check if the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it
+        }
+        else
+        {
+            if (rank == 1)
+            {
+                if (tiles[rank + 1][file].icon == ' ')
+                {
+                    // If in the starting position, the pawn can move 1 or 2 tiles
+                    possibleMoves.push_back(make_pair(rank + 1, file));
+                    if (tiles[rank + 2][file].icon == ' ')
+                    {
+                        possibleMoves.push_back(make_pair(rank + 2, file));
+                    }
+                }
+            }
+            else if (rank < 7)
+            {
+                // If not in the starting position, the pawn can only move 1 tile forward
+                if (tiles[rank + 1][file].icon == ' ')
+                {
+                    possibleMoves.push_back(make_pair(rank + 1, file));
+                }
+            }
+            if (tiles[rank + 1][file - 1].icon != ' ' && !is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank + 1, file - 1));
+            }
+            if (tiles[rank + 1][file + 1].icon != ' ' && !is_white_turn)
+            {
+                possibleMoves.push_back(make_pair(rank + 1, file + 1));
+            }
+            // TODO en passant - check if the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it
+        }
+
+        for (const auto &move : possibleMoves)
+        {
+            std::cout << char(file + 'a') << 8 - rank << " -> " << char(move.second + 'a') << 8 - move.first << std::endl;
+        }
+
+        tiles[rank][file].piece->addPossibleMoves(possibleMoves);
+    }
+
+    void calculate_rook_moves(int rank, int file)
+    {
+    }
+
+    void calculate_knight_moves(int rank, int file)
+    {
+    }
+
+    void calculate_bishop_moves(int rank, int file)
+    {
+    }
+
+    void calculate_queen_moves(int rank, int file)
+    {
+    }
+
+    void calculate_king_moves(int rank, int file)
+    {
     }
 };
 
@@ -531,6 +729,7 @@ int main()
 {
     std::cout << "Welcome to Chess!" << std::endl;
     Chess_Board board;
+    bool skip_display = false;
 
     while (true)
     {
@@ -542,7 +741,15 @@ int main()
         {
             std::cout << "Black's turn." << std::endl;
         }
-        board.display_board();
+
+        if (!skip_display)
+        {
+            board.display_board();
+        }
+        else
+        {
+            skip_display = false;
+        }
         std::cout << "Enter a move: ";
         string move;
         std::cin >> move;
@@ -556,11 +763,12 @@ int main()
             help_message();
             continue;
         }
-        // else if (move.length() == 2)
-        // {
-        //     show_possible_moves(move);
-        //     continue;
-        // }
+        else if (move.length() == 2)
+        {
+            board.show_possible_moves(move);
+            skip_display = true;
+            continue;
+        }
         else if (move.length() == 5)
         {
             board.move_piece(move);
