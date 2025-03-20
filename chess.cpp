@@ -847,6 +847,89 @@ public:
 
     vector<pair<int, int>> calculate_bishop_moves(int rank, int file)
     {
+        vector<pair<int, int>> possibleMoves;
+        Chess_Piece *bishop = tiles[rank][file].piece;
+
+        // Search for possible moves in the four diagonal directions
+        int i = rank + 1;
+        int j = file + 1;
+        while (i < 8 && j < 8)
+        {
+            if (tiles[i][j].icon == ' ')
+            {
+                possibleMoves.push_back(make_pair(i, j));
+            }
+            else
+            {
+                if (tiles[i][j].piece->isWhite() != is_white_turn)
+                {
+                    possibleMoves.push_back(make_pair(i, j));
+                }
+                break;
+            }
+            i++;
+            j++;
+        }
+        i = rank - 1;
+        j = file - 1;
+        while (i >= 0 && j >= 0)
+        {
+            if (tiles[i][j].icon == ' ')
+            {
+                possibleMoves.push_back(make_pair(i, j));
+            }
+            else
+            {
+                if (tiles[i][j].piece->isWhite() != is_white_turn)
+                {
+                    possibleMoves.push_back(make_pair(i, j));
+                }
+                break;
+            }
+            i--;
+            j--;
+        }
+        i = rank + 1;
+        j = file - 1;
+        while (i < 8 && j >= 0)
+        {
+            if (tiles[i][j].icon == ' ')
+            {
+                possibleMoves.push_back(make_pair(i, j));
+            }
+            else
+            {
+                if (tiles[i][j].piece->isWhite() != is_white_turn)
+                {
+                    possibleMoves.push_back(make_pair(i, j));
+                }
+                break;
+            }
+            i++;
+            j--;
+        }
+        i = rank - 1;
+        j = file + 1;
+        while (i >= 0 && j < 8)
+        {
+            if (tiles[i][j].icon == ' ')
+            {
+                possibleMoves.push_back(make_pair(i, j));
+            }
+            else
+            {
+                if (tiles[i][j].piece->isWhite() != is_white_turn)
+                {
+                    possibleMoves.push_back(make_pair(i, j));
+                }
+                break;
+            }
+            i--;
+            j++;
+        }
+
+        bishop->addPossibleMoves(possibleMoves);
+        return possibleMoves;
     }
 
     void calculate_queen_moves(int rank, int file)
