@@ -153,7 +153,16 @@ public:
             {
                 if (tiles[i][j].highlight)
                 {
-                    std::cout << "* ";
+                    if(tiles[i][j].piece != nullptr)
+                    {
+                        // Indicates a piece that can be captured
+                        std::cout << "X ";
+                    }
+                    else
+                    {
+                        // Indicates an empty tile that can be moved to
+                        std::cout << "* ";
+                    }
                 }
                 else
                 {
@@ -573,6 +582,11 @@ public:
         calculate_possible_moves(rank, file, piece);
         vector<pair<int, int>> possible_moves = tiles[rank][file].piece->getPossibleMoves();
 
+        for (const auto &move : possible_moves)
+        {
+            std::cout << char(file + 'a') << 8 - rank << " -> " << char(move.second + 'a') << 8 - move.first << std::endl;
+        }
+
         // Display the board with the possible moves highlighted
         for (size_t i = 0; i < possible_moves.size(); i++)
         {
@@ -689,16 +703,76 @@ public:
             // TODO en passant - check if the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it
         }
 
-        for (const auto &move : possibleMoves)
-        {
-            std::cout << char(file + 'a') << 8 - rank << " -> " << char(move.second + 'a') << 8 - move.first << std::endl;
-        }
-
         tiles[rank][file].piece->addPossibleMoves(possibleMoves);
     }
 
     void calculate_rook_moves(int rank, int file)
     {
+        vector<pair<int, int>> possibleMoves;
+        Chess_Piece *rook = tiles[rank][file].piece;
+
+        for (int i = rank + 1; i < 8; i++)
+        {
+            if (tiles[i][file].icon == ' ')
+            {
+                possibleMoves.push_back(make_pair(i, file));
+            }
+            else
+            {
+                if (tiles[i][file].piece->isWhite() != is_white_turn)
+                {
+                    possibleMoves.push_back(make_pair(i, file));
+                }
+                break;
+            }
+        }
+        for (int i = rank - 1; i >= 0; i--)
+        {
+            if (tiles[i][file].icon == ' ')
+            {
+                possibleMoves.push_back(make_pair(i, file));
+            }
+            else
+            {
+                if (tiles[i][file].piece->isWhite() != is_white_turn)
+                {
+                    possibleMoves.push_back(make_pair(i, file));
+                }
+                break;
+            }
+        }
+        for (int i = file + 1; i < 8; i++)
+        {
+            if (tiles[rank][i].icon == ' ')
+            {
+                possibleMoves.push_back(make_pair(rank, i));
+            }
+            else
+            {
+                if (tiles[rank][i].piece->isWhite() != is_white_turn)
+                {
+                    possibleMoves.push_back(make_pair(rank, i));
+                }
+                break;
+            }
+        }
+        for (int i = file - 1; i >= 0; i--)
+        {
+            if (tiles[rank][i].icon == ' ')
+            {
+                possibleMoves.push_back(make_pair(rank, i));
+            }
+            else
+            {
+                if (tiles[rank][i].piece->isWhite() != is_white_turn)
+                {
+                    possibleMoves.push_back(make_pair(rank, i));
+                }
+                break;
+            }
+        }
+
+        rook->addPossibleMoves(possibleMoves);
     }
 
     void calculate_knight_moves(int rank, int file)
