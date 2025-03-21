@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <regex>
 using namespace std;
 
 class Chess_Piece
@@ -46,6 +47,7 @@ public:
         is_captured = true;
     }
     void addPossibleMoves(vector<pair<int, int>> moves) { possible_moves = moves; }
+    void promote(char piece) { icon = piece; }
 };
 
 class Chess_Board
@@ -123,6 +125,13 @@ public:
             pieces[24 + i] = Chess_Piece('P', 'a' + i, '7', false);
         }
 
+        for (int i = 0; i < 32; i++)
+        {
+            pieces[i].setCaptured();
+        }
+
+        pieces[5] = Chess_Piece('P', 'f', '8', true);
+        pieces[23] = Chess_Piece('P', 'h', '1', false);
         set_pieces();
     };
 
@@ -135,14 +144,13 @@ public:
     {
         for (int i = 0; i < 32; i++)
         {
-            if (pieces[i].isCaptured())
+            if (!pieces[i].isCaptured())
             {
-                continue;
+                int rank = pieces[i].getRank();
+                int file = pieces[i].getFile();
+                tiles[rank][file].piece = &pieces[i];
+                tiles[rank][file].icon = pieces[i].getIcon();
             }
-            int rank = pieces[i].getRank();
-            int file = pieces[i].getFile();
-            tiles[rank][file].piece = &pieces[i];
-            tiles[rank][file].icon = pieces[i].getIcon();
         }
     }
 
@@ -307,7 +315,7 @@ public:
             }
 
             // Check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
-            tile* en_passant_target = &tiles[target_tile[0] + 1][target_tile[1]];
+            tile *en_passant_target = &tiles[target_tile[0] + 1][target_tile[1]];
             if (rank == 3 &&
                 en_passant_target->piece == last_moved &&
                 en_passant_target->icon == 'P')
@@ -351,7 +359,7 @@ public:
                 }
             }
             // Check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
-            tile* en_passant_target = &tiles[target_tile[0] - 1][target_tile[1]];
+            tile *en_passant_target = &tiles[target_tile[0] - 1][target_tile[1]];
             if (rank == 4 &&
                 en_passant_target->piece == last_moved &&
                 en_passant_target->icon == 'P')
@@ -568,6 +576,40 @@ public:
         return make_pair(false, false);
     }
 
+    void promote_pawn(string &move)
+    {
+
+        int file = move[0] - 'a';       // column
+        int rank = 7 - (move[1] - '1'); // row
+        char promo_piece = move[2];
+        tile *t = &tiles[rank][file];
+
+        // Check if the pawn has reached the end of the board
+        if (rank != 0 && rank != 7)
+        {
+            std::cout << "Invalid move." << std::endl;
+            return;
+        }
+
+        if ((rank == 7 && !t->piece->isWhite()) ||
+            (rank == 0 && t->piece->isWhite()))
+        {
+            std::cout << "Not your pawn to promote." << std::endl;
+            return;
+        }
+
+        // Check if the pawn is at the correct position to be promoted
+        if (t->icon != 'P')
+        {
+            std::cout << "No pawn present for promotion" << std::endl;
+            return;
+        }
+
+        t->piece->promote(promo_piece);
+        t->icon = promo_piece;
+        is_white_turn = !is_white_turn;
+    }
+
     pair<bool, bool> check_logic()
     {
         // Check if the king is in check
@@ -698,7 +740,6 @@ public:
                     possibleMoves.push_back(make_pair(rank - 1, file + 1));
                 }
             }
-        
         }
         else
         {
@@ -1100,6 +1141,10 @@ int main()
             board.show_possible_moves(move);
             skip_display = true;
             continue;
+        }
+        else if (regex_match(move, regex("[a-h]{1}[1-8]{1}[QRBN]{1}"))) // Queen Promotion
+        {
+            board.promote_pawn(move);
         }
         else if (move.length() == 4)
         {
