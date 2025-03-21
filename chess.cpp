@@ -125,13 +125,15 @@ public:
             pieces[24 + i] = Chess_Piece('P', 'a' + i, '7', false);
         }
 
-        for (int i = 0; i < 32; i++)
-        {
-            pieces[i].setCaptured();
-        }
-
-        pieces[5] = Chess_Piece('P', 'f', '8', true);
-        pieces[23] = Chess_Piece('P', 'h', '1', false);
+        // // testing
+        // for (int i = 8; i < 16; i++)
+        // {
+        //     pieces[i].setCaptured();
+        // }
+        // for (int i = 24; i < 32; i++)
+        // {
+        //     pieces[i].setCaptured();
+        // }
         set_pieces();
     };
 
@@ -1098,11 +1100,59 @@ void help_message()
     std::cout << "Type 'exit' to quit." << std::endl;
 }
 
+string convert_move(string move)
+{
+    int m_size = move.size();
+    char target_f = move[m_size - 2];
+    char target_r = move[m_size - 1];
+    char f;
+    char r;
+    regex is_file("[a-h]{1}");
+    regex is_rank("[1-8]{1}");
+
+    if (regex_match(string(1, move[m_size - 3]), is_file))
+    {
+        f = move[m_size - 3];
+        if (regex_match(string(1, move[m_size - 4]), is_rank))
+        {
+            r = move[m_size - 4];
+        }
+        else
+        {
+            r = target_r;
+        }
+    }
+    else
+    {
+        r = move[m_size - 3];
+        ;
+
+        if (!regex_match(string(1, move[m_size - 4]), is_file))
+        {
+            f = target_f;
+        }
+        else
+        {
+            f = move[m_size - 4];
+        }
+    }
+
+    if (regex_match(string{move[0]}, regex("[KQBNRP]{1}")))
+    {
+        return string{move[0], f, r, target_f, target_r};
+    }
+    else
+    {
+        return string{f, r, target_f, target_r};
+    }
+}
+
 int main()
 {
     std::cout << "Welcome to Chess!" << std::endl;
     Chess_Board board;
     bool skip_display = false;
+    regex pawn_promotion("[a-h]{1}[1-8]{1}[QRBN]{1}");
 
     while (true)
     {
@@ -1136,25 +1186,31 @@ int main()
             help_message();
             continue;
         }
-        else if (move.length() == 2)
+        else if (regex_match(move, regex("[a-h]{1}[1-8]{1}"))) // Display possible moves
         {
             board.show_possible_moves(move);
             skip_display = true;
             continue;
         }
-        else if (regex_match(move, regex("[a-h]{1}[1-8]{1}[QRBN]{1}"))) // Queen Promotion
+        else if (regex_match(move, pawn_promotion)) // Pawn Promotion
         {
             board.promote_pawn(move);
         }
-        else if (move.length() == 4)
+        else if (regex_match(move, regex("[KQBNRP]{1}([a-h]{1}|[1-8]{1}){1,2}[a-h]{1}[1-8]{1}")))
         {
-            move = "P" + move;
-            board.move_piece(move);
+
+            string m = convert_move(move);
+            std::cout << "Move: " << m << std::endl;
+
+            board.move_piece(m);
             continue;
         }
-        else if (move.length() == 5)
+        // move a pawn without stating it is a pawn
+        else if (regex_match(move, regex("([a-h]{1}|[1-8]{1}){1,2}[a-h]{1}[1-8]{1}")))
         {
-            board.move_piece(move);
+            string m = "P" + convert_move(move);
+            std::cout << "Move: " << m << std::endl;
+            board.move_piece(m);
             continue;
         }
         else
@@ -1168,3 +1224,4 @@ int main()
 
     return 0;
 }
+
