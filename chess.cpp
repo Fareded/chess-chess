@@ -34,7 +34,12 @@ public:
     bool isWhite() { return is_white; }
     bool isCaptured() { return is_captured; }
     bool isMoved() { return is_moved; }
-    void pieceMoved() { is_moved = true; }
+    void pieceMoved(int rank, int file)
+    {
+        is_moved = true;
+        this->rank = rank;
+        this->file = file;
+    }
     void setCaptured()
     {
         std::cout << "Piece captured:" << icon << std::endl;
@@ -77,6 +82,7 @@ private:
     Chess_Piece pieces[32];
     tile tiles[8][8];
     bool is_white_turn = true;
+    Chess_Piece *last_moved = nullptr;
 
 public:
     Chess_Board()
@@ -117,7 +123,7 @@ public:
             pieces[24 + i] = Chess_Piece('P', 'a' + i, '7', false);
         }
 
-        pieces[4] = Chess_Piece('K', 'd', '6', true);
+        pieces[9+16] = Chess_Piece('P', 'b', '4', false);
 
         set_pieces();
     };
@@ -154,7 +160,7 @@ public:
             {
                 if (tiles[i][j].highlight)
                 {
-                    if(tiles[i][j].piece != nullptr)
+                    if (tiles[i][j].piece != nullptr)
                     {
                         // Indicates a piece that can be captured
                         std::cout << "X ";
@@ -227,11 +233,12 @@ public:
         }
 
         // Move the piece
-        tiles[rank][file].piece->pieceMoved();
+        tiles[rank][file].piece->pieceMoved(target_rank, target_file);
         tiles[target_rank][target_file].set_tile(tiles[rank][file].piece);
         tiles[rank][file].empty_tile();
 
         is_white_turn = !is_white_turn;
+        last_moved = tiles[target_rank][target_file].piece;
         std::cout << "Last move: " << move << std::endl;
     }
 
@@ -269,14 +276,11 @@ public:
     {
         vector<pair<int, int>> possibleMoves;
         bool captured_piece = false;
-
-        // TODO find all moves
         // TODO pawn promotion
 
-        // Add pawn move logic here
         if (is_white_turn)
         {
-            //
+            // Check if the target tile is diagonally aligned with the pawn
             if (target_tile[0] == rank - 1 &&
                 (target_tile[1] == file - 1 || target_tile[1] == file + 1) &&
                 tiles[target_tile[0]][target_tile[1]].icon != ' ')
@@ -303,12 +307,18 @@ public:
                     possibleMoves.push_back(make_pair(rank - 1, file));
                 }
             }
+
             // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
-            // possibly add a last_move variable to the class to store the last move
-            if (rank > 0 && file > 0 && tiles[rank - 1][file - 1].icon != ' ' && !is_white_turn)
+            tile* en_passant_target = &tiles[target_tile[0] + 1][target_tile[1]];
+            if (rank == 3 &&
+                en_passant_target->piece == last_moved &&
+                en_passant_target->icon == 'P')
             {
-                // If there is an enemy piece diagonally to the left, the pawn can capture it (en passant)
                 possibleMoves.push_back(make_pair(rank - 1, file - 1));
+                en_passant_target->piece->setCaptured();
+                en_passant_target->empty_tile();
+
+                return make_pair(true, false); // false because the piece was captured by en passant
             }
         }
         else
@@ -343,11 +353,17 @@ public:
                 }
             }
             // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
-            // possibly add a last_move variable to the class to store the last move
-            if (rank < 7 && file < 7 && tiles[rank + 1][file + 1].icon != ' ' && is_white_turn)
+            tile* en_passant_target = &tiles[target_tile[0] - 1][target_tile[1]];
+            if (rank == 4 &&
+                en_passant_target->piece == last_moved &&
+                en_passant_target->icon == 'P')
             {
-                // If there is an enemy piece diagonally to the right, the pawn can capture it (en passant)
-                possibleMoves.push_back(make_pair(rank + 1, file + 1));
+                possibleMoves.push_back(make_pair(rank - 1, file - 1));
+                std::cout << "Piece captured." << std::endl;
+                en_passant_target->piece->setCaptured();
+                en_passant_target->empty_tile();
+
+                return make_pair(true, false); // false because the piece was captured by en passant
             }
         }
 
@@ -819,24 +835,21 @@ public:
         }
         if (rank + 1 < 8 && file - 2 >= 0)
         {
-            if (tiles[rank + 1][file - 2].icon == ' ' || tiles[
-                rank + 1][file - 2].piece->isWhite() != is_white_turn)
+            if (tiles[rank + 1][file - 2].icon == ' ' || tiles[rank + 1][file - 2].piece->isWhite() != is_white_turn)
             {
                 possibleMoves.push_back(make_pair(rank + 1, file - 2));
             }
         }
         if (rank - 2 >= 0 && file - 1 >= 0)
         {
-            if (tiles[rank - 2][file - 1].icon == ' ' || tiles[
-                rank - 2][file - 1].piece->isWhite() != is_white_turn)
+            if (tiles[rank - 2][file - 1].icon == ' ' || tiles[rank - 2][file - 1].piece->isWhite() != is_white_turn)
             {
                 possibleMoves.push_back(make_pair(rank - 2, file - 1));
             }
         }
         if (rank - 1 >= 0 && file - 2 >= 0)
         {
-            if (tiles[rank - 1][file - 2].icon == ' ' || tiles[
-                rank - 1][file - 2].piece->isWhite() != is_white_turn)
+            if (tiles[rank - 1][file - 2].icon == ' ' || tiles[rank - 1][file - 2].piece->isWhite() != is_white_turn)
             {
                 possibleMoves.push_back(make_pair(rank - 1, file - 2));
             }
