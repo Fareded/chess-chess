@@ -1101,6 +1101,12 @@ int main()
             skip_display = true;
             continue;
         }
+        else if (move.length() == 4)
+        {
+            move = "P" + move;
+            board.move_piece(move);
+            continue;
+        }
         else if (move.length() == 5)
         {
             board.move_piece(move);
