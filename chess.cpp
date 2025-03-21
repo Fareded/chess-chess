@@ -123,8 +123,6 @@ public:
             pieces[24 + i] = Chess_Piece('P', 'a' + i, '7', false);
         }
 
-        pieces[9+16] = Chess_Piece('P', 'b', '4', false);
-
         set_pieces();
     };
 
@@ -308,7 +306,7 @@ public:
                 }
             }
 
-            // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
+            // Check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
             tile* en_passant_target = &tiles[target_tile[0] + 1][target_tile[1]];
             if (rank == 3 &&
                 en_passant_target->piece == last_moved &&
@@ -352,7 +350,7 @@ public:
                     possibleMoves.push_back(make_pair(rank + 1, file));
                 }
             }
-            // TODO check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
+            // Check the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it (en passant)
             tile* en_passant_target = &tiles[target_tile[0] - 1][target_tile[1]];
             if (rank == 4 &&
                 en_passant_target->piece == last_moved &&
@@ -686,6 +684,21 @@ public:
             }
 
             // TODO en passant - check if the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it
+            if (rank == 3)
+            {
+                if (tiles[rank][file - 1].icon == 'P' && tiles[rank][file - 1].piece->isWhite() != is_white_turn && tiles[rank][file - 1].piece == last_moved)
+                {
+                    possibleMoves.push_back(make_pair(rank - 1, file - 1));
+                }
+                {
+                    possibleMoves.push_back(make_pair(rank - 1, file - 1));
+                }
+                if (tiles[rank][file + 1].icon == 'P' && tiles[rank][file + 1].piece->isWhite() != is_white_turn && tiles[rank][file + 1].piece == last_moved)
+                {
+                    possibleMoves.push_back(make_pair(rank - 1, file + 1));
+                }
+            }
+        
         }
         else
         {
@@ -717,7 +730,18 @@ public:
             {
                 possibleMoves.push_back(make_pair(rank + 1, file + 1));
             }
-            // TODO en passant - check if the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it
+            // en passant - check if the other pawn moved last turn and if it moved 2 tiles, the current pawn can capture it
+            if (rank == 4)
+            {
+                if (tiles[rank][file - 1].icon == 'P' && tiles[rank][file - 1].piece->isWhite() != is_white_turn && tiles[rank][file - 1].piece == last_moved)
+                {
+                    possibleMoves.push_back(make_pair(rank + 1, file - 1));
+                }
+                if (tiles[rank][file + 1].icon == 'P' && tiles[rank][file + 1].piece->isWhite() != is_white_turn && tiles[rank][file + 1].piece == last_moved)
+                {
+                    possibleMoves.push_back(make_pair(rank + 1, file + 1));
+                }
+            }
         }
 
         tiles[rank][file].piece->addPossibleMoves(possibleMoves);
